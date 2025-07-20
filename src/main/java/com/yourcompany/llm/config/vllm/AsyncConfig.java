@@ -1,7 +1,8 @@
 // AsyncConfig.java
-package com.yourcompany.llm.config;
+package com.yourcompany.llm.config.vllm;
 
-import lombok.extern.slf4j.Slf4j;
+import java.util.concurrent.Executor;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -9,14 +10,11 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
-import java.util.concurrent.Executor;
+import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
-@Configuration
-@EnableAsync
-@EnableScheduling
+@Slf4j @Configuration @EnableAsync @EnableScheduling
 public class AsyncConfig {
-    
+
     /**
      * LLM 작업을 위한 비동기 실행자
      */
@@ -29,13 +27,13 @@ public class AsyncConfig {
         executor.setThreadNamePrefix("llm-task-");
         executor.setRejectedExecutionHandler(new java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy());
         executor.initialize();
-        
-        log.info("✅ LLM Task Executor configured - Core: {}, Max: {}, Queue: {}", 
-            executor.getCorePoolSize(), executor.getMaxPoolSize(), executor.getQueueCapacity());
-        
+
+        log.info("✅ LLM Task Executor configured - Core: {}, Max: {}, Queue: {}", executor.getCorePoolSize(),
+                executor.getMaxPoolSize(), executor.getQueueCapacity());
+
         return executor;
     }
-    
+
     /**
      * vLLM 모니터링을 위한 스케줄러
      */
@@ -47,12 +45,12 @@ public class AsyncConfig {
         scheduler.setWaitForTasksToCompleteOnShutdown(true);
         scheduler.setAwaitTerminationSeconds(30);
         scheduler.initialize();
-        
+
         log.info("✅ vLLM Task Scheduler configured - Pool Size: {}", scheduler.getPoolSize());
-        
+
         return scheduler;
     }
-    
+
     /**
      * 일반적인 비동기 작업을 위한 실행자
      */
@@ -64,10 +62,10 @@ public class AsyncConfig {
         executor.setQueueCapacity(25);
         executor.setThreadNamePrefix("async-task-");
         executor.initialize();
-        
-        log.info("✅ General Task Executor configured - Core: {}, Max: {}, Queue: {}", 
-            executor.getCorePoolSize(), executor.getMaxPoolSize(), executor.getQueueCapacity());
-        
+
+        log.info("✅ General Task Executor configured - Core: {}, Max: {}, Queue: {}", executor.getCorePoolSize(),
+                executor.getMaxPoolSize(), executor.getQueueCapacity());
+
         return executor;
     }
 }

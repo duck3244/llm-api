@@ -4,7 +4,7 @@
     "configurations": [
         {
             "type": "java",
-            "name": "Launch vLLM Llama 3.1 API (Dev)",
+            "name": "Launch vLLM Llama 3.2 API (Dev)",
             "request": "launch",
             "mainClass": "com.yourcompany.llm.LlmApiApplication",
             "projectName": "vllm-llama31-api",
@@ -23,10 +23,10 @@
         },
         {
             "type": "java",
-            "name": "Launch vLLM Llama 3.1 API (Prod)",
+            "name": "Launch vLLM Llama 3.2 API (Prod)",
             "request": "launch",
             "mainClass": "com.yourcompany.llm.LlmApiApplication",
-            "projectName": "vllm-llama31-api",
+            "projectName": "vllm-llama32-api",
             "args": [],
             "vmArgs": [
                 "-Dspring.profiles.active=prod",
@@ -43,10 +43,10 @@
         },
         {
             "type": "java",
-            "name": "Debug vLLM Llama 3.1 API",
+            "name": "Debug vLLM Llama 3.2 API",
             "request": "launch",
             "mainClass": "com.yourcompany.llm.LlmApiApplication",
-            "projectName": "vllm-llama31-api",
+            "projectName": "vllm-llama32-api",
             "args": [],
             "vmArgs": [
                 "-Dspring.profiles.active=dev",

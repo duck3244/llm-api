@@ -1,5 +1,5 @@
 # .vscode/api-tests.http
-# vLLM Llama 3.1 API 테스트 파일
+# vLLM Llama 3.2 API 테스트 파일
 # VSCode REST Client 확장이 필요합니다
 
 ### 변수 설정

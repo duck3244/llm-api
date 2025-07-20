@@ -1,23 +1,38 @@
-// .vscode/eclipse-java-google-style.xml
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <profiles version="13">
-<profile kind="CodeFormatterProfile" name="GoogleStyle" version="13">
-<setting id="org.eclipse.jdt.core.formatter.comment.insert_line_before_root_tags" value="insert"/>
-<setting id="org.eclipse.jdt.core.formatter.disabling_tag" value="@formatter:off"/>
-<setting id="org.eclipse.jdt.core.formatter.enabling_tag" value="@formatter:on"/>
-<setting id="org.eclipse.jdt.core.formatter.insert_space_after_comma_in_annotation" value="insert"/>
-<setting id="org.eclipse.jdt.core.formatter.insert_space_after_comma_in_type_arguments" value="insert"/>
-<setting id="org.eclipse.jdt.core.formatter.insert_space_after_comma_in_type_parameters" value="insert"/>
-<setting id="org.eclipse.jdt.core.formatter.insert_space_before_comma_in_type_arguments" value="do not insert"/>
-<setting id="org.eclipse.jdt.core.formatter.insert_space_before_comma_in_type_parameters" value="do not insert"/>
-<setting id="org.eclipse.jdt.core.formatter.insert_space_between_empty_parens_in_annotation_type_member_declaration" value="do not insert"/>
-<setting id="org.eclipse.jdt.core.formatter.blank_lines_before_field" value="0"/>
-<setting id="org.eclipse.jdt.core.formatter.blank_lines_before_method" value="1"/>
-<setting id="org.eclipse.jdt.core.formatter.tabulation.char" value="space"/>
-<setting id="org.eclipse.jdt.core.formatter.tabulation.size" value="4"/>
-<setting id="org.eclipse.jdt.core.formatter.insert_space_after_comma_in_method_invocation_arguments" value="insert"/>
-<setting id="org.eclipse.jdt.core.formatter.insert_space_after_comma_in_method_declaration_parameters" value="insert"/>
-<setting id="org.eclipse.jdt.core.formatter.insert_space_before_comma_in_method_invocation_arguments" value="do not insert"/>
-<setting id="org.eclipse.jdt.core.formatter.insert_space_before_comma_in_method_declaration_parameters" value="do not insert"/>
-</profile>
+    <profile kind="CodeFormatterProfile" name="GoogleStyle" version="13">
+        <setting id="org.eclipse.jdt.core.formatter.comment.insert_line_before_root_tags"
+            value="insert" />
+        <setting id="org.eclipse.jdt.core.formatter.disabling_tag" value="@formatter:off" />
+        <setting id="org.eclipse.jdt.core.formatter.enabling_tag" value="@formatter:on" />
+        <setting id="org.eclipse.jdt.core.formatter.insert_space_after_comma_in_annotation"
+            value="insert" />
+        <setting id="org.eclipse.jdt.core.formatter.insert_space_after_comma_in_type_arguments"
+            value="insert" />
+        <setting id="org.eclipse.jdt.core.formatter.insert_space_after_comma_in_type_parameters"
+            value="insert" />
+        <setting id="org.eclipse.jdt.core.formatter.insert_space_before_comma_in_type_arguments"
+            value="do not insert" />
+        <setting id="org.eclipse.jdt.core.formatter.insert_space_before_comma_in_type_parameters"
+            value="do not insert" />
+        <setting
+            id="org.eclipse.jdt.core.formatter.insert_space_between_empty_parens_in_annotation_type_member_declaration"
+            value="do not insert" />
+        <setting id="org.eclipse.jdt.core.formatter.blank_lines_before_field" value="0" />
+        <setting id="org.eclipse.jdt.core.formatter.blank_lines_before_method" value="1" />
+        <setting id="org.eclipse.jdt.core.formatter.tabulation.char" value="space" />
+        <setting id="org.eclipse.jdt.core.formatter.tabulation.size" value="4" />
+        <setting
+            id="org.eclipse.jdt.core.formatter.insert_space_after_comma_in_method_invocation_arguments"
+            value="insert" />
+        <setting
+            id="org.eclipse.jdt.core.formatter.insert_space_after_comma_in_method_declaration_parameters"
+            value="insert" />
+        <setting
+            id="org.eclipse.jdt.core.formatter.insert_space_before_comma_in_method_invocation_arguments"
+            value="do not insert" />
+        <setting
+            id="org.eclipse.jdt.core.formatter.insert_space_before_comma_in_method_declaration_parameters"
+            value="do not insert" />
+    </profile>
 </profiles>

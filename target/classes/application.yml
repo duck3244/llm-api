@@ -1,0 +1,65 @@
+# application.yml
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: vllm-llama31-api
+  profiles:
+    active: dev
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    com.yourcompany.llm: DEBUG
+    org.springframework: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# vLLM Llama 3.1 Configuration
+vllm:
+  global-settings:
+    seed: 42
+    log-level: INFO
+    enable-metrics: true
+  
+  servers:
+    - name: "llama32-primary"
+      model: "torchtorchkimtorch/Llama-3.2-Korean-GGACHI-1B-Instruct-v1"  # 실제 모델 경로로 변경
+      host: "localhost"
+      port: 8001
+      enabled: true
+      model-settings:
+        max-model-len: 8192
+        max-num-seqs: 256
+        dtype: "auto"
+        trust-remote-code: false
+      performance-settings:
+        gpu-memory-utilization: 0.9
+        tensor-parallel-size: 1
+        disable-log-stats: false
+    
+    - name: "llama32-secondary"
+      model: "torchtorchkimtorch/Llama-3.2-Korean-GGACHI-1B-Instruct-v1"
+      host: "localhost"
+      port: 8002
+      enabled: false  # 필요시 활성화
+      model-settings:
+        max-model-len: 8192
+        max-num-seqs: 256
+        dtype: "auto"
+        trust-remote-code: false
+      performance-settings:
+        gpu-memory-utilization: 0.9
+        tensor-parallel-size: 1
+        disable-log-stats: false
