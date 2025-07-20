@@ -1,0 +1,377 @@
+# application.yml - 기본 설정
+spring:
+  application:
+    name: llm-api-service
+  
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+  
+  # 데이터베이스 설정
+  datasource:
+    url: ${DATABASE_URL:jdbc:h2:mem:testdb}
+    username: ${DATABASE_USERNAME:sa}
+    password: ${DATABASE_PASSWORD:}
+    driver-class-name: ${DATABASE_DRIVER:org.h2.Driver}
+    hikari:
+      maximum-pool-size: ${DB_POOL_SIZE:20}
+      minimum-idle: ${DB_POOL_MIN_IDLE:5}
+      idle-timeout: 300000
+      connection-timeout: 20000
+      leak-detection-threshold: 60000
+      pool-name: "LLM-HikariCP"
+  
+  # JPA 설정
+  jpa:
+    hibernate:
+      ddl-auto: ${JPA_DDL_AUTO:update}
+    show-sql: ${JPA_SHOW_SQL:false}
+    properties:
+      hibernate:
+        dialect: ${JPA_DIALECT:org.hibernate.dialect.H2Dialect}
+        format_sql: true
+        use_sql_comments: true
+        jdbc:
+          batch_size: 20
+          order_inserts: true
+          order_updates: true
+        cache:
+          use_second_level_cache: true
+          use_query_cache: true
+          region:
+            factory_class: org.hibernate.cache.jcache.JCacheRegionFactory
+  
+  # Redis 설정
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: ${REDIS_DATABASE:0}
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+          max-wait: -1ms
+        shutdown-timeout: 100ms
+  
+  # 캐시 설정
+  cache:
+    type: redis
+    redis:
+      time-to-live: 3600000 # 1시간
+      cache-null-values: false
+      key-prefix: "llm:cache:"
+      use-key-prefix: true
+  
+  # 웹 설정
+  mvc:
+    async:
+      request-timeout: 30s
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  
+  # 멀티파트 설정
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 100MB
+      file-size-threshold: 2KB
+  
+  # JSON 설정
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+      indent-output: true
+    deserialization:
+      fail-on-unknown-properties: false
+    default-property-inclusion: non_null
+    time-zone: UTC
+    date-format: "yyyy-MM-dd HH:mm:ss"
+  
+  # 스케줄링 설정
+  task:
+    scheduling:
+      pool:
+        size: 5
+        thread-name-prefix: "llm-scheduler-"
+    execution:
+      pool:
+        core-size: 10
+        max-size: 50
+        queue-capacity: 100
+        thread-name-prefix: "llm-executor-"
+
+# 서버 설정
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    context-path: ${CONTEXT_PATH:}
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/xml,text/plain,text/css,text/javascript,application/javascript
+    min-response-size: 1024
+  http2:
+    enabled: true
+  error:
+    include-message: always
+    include-binding-errors: always
+    include-stacktrace: never
+    include-exception: false
+
+# 액추에이터 설정
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,loggers,env,configprops,mappings
+      base-path: /actuator
+      cors:
+        allowed-origins: "*"
+        allowed-methods: GET,POST
+  endpoint:
+    health:
+      show-details: when-authorized
+      show-components: always
+      probes:
+        enabled: true
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+    info:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+        step: 1m
+        descriptions: true
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      sla:
+        http.server.requests: 50ms,100ms,200ms,300ms,500ms,1s,2s,5s
+    tags:
+      application: ${spring.application.name}
+      environment: ${spring.profiles.active}
+  info:
+    env:
+      enabled: true
+    java:
+      enabled: true
+    os:
+      enabled: true
+    git:
+      mode: full
+
+# LLM 기본 설정
+llm:
+  # 기본 모델 설정
+  models:
+    - name: "gpt-3.5-turbo"
+      provider: "openai"
+      endpoint: "https://api.openai.com/v1/chat/completions"
+      apiKey: "${OPENAI_API_KEY:}"
+      maxTokens: 4096
+      temperature: 0.7
+      enabled: ${OPENAI_ENABLED:false}
+      limits:
+        maxRequestsPerMinute: 60
+        maxTokensPerMinute: 40000
+        maxConcurrentRequests: 10
+        maxContextLength: 4096
+        costPerInputToken: 0.0015
+        costPerOutputToken: 0.002
+      features:
+        supportsStreaming: true
+        supportsSystemPrompt: true
+        supportsFunctionCalling: true
+        supportsVision: false
+        supportsEmbeddings: false
+        supportedLanguages: ["en", "ko", "ja", "zh", "es", "fr", "de"]
+        specializations: ["general", "coding", "reasoning"]
+    
+    - name: "claude-3-sonnet"
+      provider: "anthropic"
+      endpoint: "https://api.anthropic.com/v1/messages"
+      apiKey: "${ANTHROPIC_API_KEY:}"
+      maxTokens: 4096
+      temperature: 0.7
+      enabled: ${ANTHROPIC_ENABLED:false}
+      limits:
+        maxRequestsPerMinute: 50
+        maxTokensPerMinute: 40000
+        maxConcurrentRequests: 5
+        maxContextLength: 200000
+        costPerInputToken: 0.003
+        costPerOutputToken: 0.015
+      features:
+        supportsStreaming: true
+        supportsSystemPrompt: true
+        supportsFunctionCalling: false
+        supportsVision: true
+        supportsEmbeddings: false
+        supportedLanguages: ["en", "ko", "ja", "zh", "es", "fr", "de"]
+        specializations: ["general", "reasoning", "creative"]
+  
+  # 기본 설정
+  defaults:
+    model: "gpt-3.5-turbo"
+    timeout: 30000
+    retryAttempts: 3
+    retryDelayMs: 1000
+    retryMultiplier: 2.0
+    enableCircuitBreaker: true
+    enableMetrics: true
+    enableCaching: true
+  
+  # 재시도 설정
+  retry:
+    maxAttempts: 3
+    initialDelayMs: 1000
+    multiplier: 2.0
+    maxDelayMs: 30000
+    retryableErrors:
+      - "TIMEOUT"
+      - "CONNECTION_ERROR"
+      - "RATE_LIMIT"
+      - "SERVER_ERROR"
+    enableJitter: true
+  
+  # 보안 설정
+  security:
+    enableApiKeyValidation: ${API_KEY_VALIDATION:true}
+    enableRateLimiting: true
+    enableRequestLogging: false
+    enableResponseLogging: false
+    maskSensitiveData: true
+    allowedOrigins:
+      - "*"
+    allowedHeaders:
+      - "Content-Type"
+      - "Authorization"
+      - "X-Requested-With"
+      - "X-API-Key"
+    sensitiveFields:
+      - "apiKey"
+      - "password"
+      - "token"
+      - "secret"
+    maxRequestSizeKb: 1024
+    requestsPerMinute: 100
+  
+  # 모니터링 설정
+  monitoring:
+    enableHealthChecks: true
+    enableMetrics: true
+    enableAlerts: true
+    enablePerformanceTracking: true
+    healthCheckIntervalSeconds: 30
+    metricsIntervalSeconds: 60
+    alertCheckIntervalSeconds: 30
+    enabledMetrics:
+      - "request_count"
+      - "response_time"
+      - "error_rate"
+      - "token_usage"
+      - "cache_hit_rate"
+    alertThresholds:
+      errorRateThreshold: 0.1
+      responseTimeThresholdMs: 5000
+      requestVolumeThreshold: 1000
+      cacheHitRateThreshold: 0.8
+      cpuUsageThreshold: 0.8
+      memoryUsageThreshold: 0.85
+  
+  # 캐시 설정
+  cache:
+    enableResponseCaching: true
+    enableModelInfoCaching: true
+    enableConfigCaching: true
+    defaultTtlSeconds: 3600
+    responseCacheTtlSeconds: 86400
+    modelInfoCacheTtlSeconds: 3600
+    configCacheTtlSeconds: 1800
+    maxCacheSizeMb: 256
+    enableCacheMetrics: true
+    enableCacheCompression: true
+    cacheExcludePatterns:
+      - "health"
+      - "metrics"
+      - "status"
+  
+  # 에러 설정
+  error:
+    include-stack-trace: false
+    include-sensitive-info: false
+
+# 로깅 설정
+logging:
+  level:
+    root: INFO
+    com.yourcompany.llm: INFO
+    org.springframework.web: WARN
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
+    org.hibernate.type.descriptor.sql.BasicBinder: WARN
+    io.lettuce.core: WARN
+    redis.clients.jedis: WARN
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
+  file:
+    name: ${LOG_FILE:logs/llm-api.log}
+  logback:
+    rollingpolicy:
+      max-file-size: 100MB
+      max-history: 30
+      total-size-cap: 3GB
+
+# 외부 API 설정
+api:
+  openai:
+    baseUrl: "https://api.openai.com/v1"
+    timeout: 30000
+    maxRetries: 3
+  anthropic:
+    baseUrl: "https://api.anthropic.com/v1"
+    timeout: 60000
+    maxRetries: 3
+  google:
+    baseUrl: "https://generativelanguage.googleapis.com/v1beta"
+    timeout: 30000
+    maxRetries: 3
+
+# 보안 설정
+security:
+  jwt:
+    secret: ${JWT_SECRET:your-secret-key-change-this-in-production}
+    expiration: 86400000 # 24시간
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:8080}
+    allowed-methods: GET,POST,PUT,DELETE,OPTIONS
+    allowed-headers: "*"
+    allow-credentials: true
+    max-age: 3600
+
+# 스웨거 설정
+springdoc:
+  api-docs:
+    enabled: true
+    path: /api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+    try-it-out-enabled: true
+    filter: true
+  packages-to-scan: com.yourcompany.llm.controller
+  paths-to-match: /api/**

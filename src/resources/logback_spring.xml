@@ -1,0 +1,379 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- logback-spring.xml - Spring Boot 통합 로깅 설정 -->
+<configuration>
+    
+    <!-- 설정 변수들 -->
+    <springProperty scope="context" name="APP_NAME" source="spring.application.name" defaultValue="llm-api"/>
+    <springProperty scope="context" name="LOG_LEVEL" source="logging.level.root" defaultValue="INFO"/>
+    <springProperty scope="context" name="LOG_PATH" source="logging.file.path" defaultValue="logs"/>
+    <springProperty scope="context" name="MAX_FILE_SIZE" source="logging.file.max-size" defaultValue="100MB"/>
+    <springProperty scope="context" name="MAX_HISTORY" source="logging.file.max-history" defaultValue="30"/>
+    <springProperty scope="context" name="TOTAL_SIZE_CAP" source="logging.file.total-size-cap" defaultValue="3GB"/>
+    
+    <!-- 색상 설정 (콘솔용) -->
+    <conversionRule conversionWord="clr" converterClass="org.springframework.boot.logging.logback.ColorConverter" />
+    <conversionRule conversionWord="wex" converterClass="org.springframework.boot.logging.logback.WhitespaceThrowableProxyConverter" />
+    <conversionRule conversionWord="wEx" converterClass="org.springframework.boot.logging.logback.ExtendedWhitespaceThrowableProxyConverter" />
+    
+    <!-- 공통 패턴 정의 -->
+    <property name="CONSOLE_LOG_PATTERN" 
+              value="%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr([%thread]){cyan} %clr(%-5level){blue} %clr([%X{traceId:-},%X{spanId:-}]){yellow} %clr(%logger{36}){magenta} %clr(-){faint} %msg%n%wEx"/>
+    
+    <property name="FILE_LOG_PATTERN" 
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{traceId:-},%X{spanId:-}] %logger{36} - %msg%n%wEx"/>
+    
+    <property name="ASYNC_FILE_LOG_PATTERN" 
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{traceId:-},%X{spanId:-}] %logger{36} - %msg%n"/>
+
+    <!-- 콘솔 Appender -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>DEBUG</level>
+        </filter>
+    </appender>
+
+    <!-- 메인 로그 파일 Appender -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/${APP_NAME}.log</file>
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/${APP_NAME}-%d{yyyy-MM-dd}-%i.log.gz</fileNamePattern>
+            <maxFileSize>${MAX_FILE_SIZE}</maxFileSize>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+            <totalSizeCap>${TOTAL_SIZE_CAP}</totalSizeCap>
+            <cleanHistoryOnStart>true</cleanHistoryOnStart>
+        </rollingPolicy>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>DEBUG</level>
+        </filter>
+    </appender>
+
+    <!-- 비동기 파일 Appender (고성능) -->
+    <appender name="ASYNC_FILE" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="FILE"/>
+        <queueSize>1024</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <maxFlushTime>5000</maxFlushTime>
+        <includeCallerData>false</includeCallerData>
+        <neverBlock>true</neverBlock>
+    </appender>
+
+    <!-- 에러 전용 로그 파일 -->
+    <appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/${APP_NAME}-error.log</file>
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/${APP_NAME}-error-%d{yyyy-MM-dd}-%i.log.gz</fileNamePattern>
+            <maxFileSize>${MAX_FILE_SIZE}</maxFileSize>
+            <maxHistory>90</maxHistory>
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+
+    <!-- LLM API 요청/응답 전용 로그 -->
+    <appender name="LLM_API_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/${APP_NAME}-llm-api.log</file>
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <timestamp/>
+                <version/>
+                <logLevel/>
+                <loggerName/>
+                <mdc/>
+                <message/>
+                <stackTrace/>
+                <pattern>
+                    <pattern>
+                        {
+                            "timestamp": "%d{yyyy-MM-dd HH:mm:ss.SSS}",
+                            "level": "%level",
+                            "thread": "%thread",
+                            "logger": "%logger{36}",
+                            "message": "%msg",
+                            "traceId": "%X{traceId:-}",
+                            "spanId": "%X{spanId:-}",
+                            "model": "%X{model:-}",
+                            "provider": "%X{provider:-}",
+                            "tokensUsed": "%X{tokensUsed:-}",
+                            "responseTime": "%X{responseTime:-}",
+                            "requestId": "%X{requestId:-}"
+                        }
+                    </pattern>
+                </pattern>
+            </providers>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/${APP_NAME}-llm-api-%d{yyyy-MM-dd}-%i.log.gz</fileNamePattern>
+            <maxFileSize>50MB</maxFileSize>
+            <maxHistory>60</maxHistory>
+            <totalSizeCap>2GB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+    <!-- 성능 메트릭 전용 로그 -->
+    <appender name="METRICS_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/${APP_NAME}-metrics.log</file>
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <timestamp/>
+                <mdc/>
+                <message/>
+                <pattern>
+                    <pattern>
+                        {
+                            "timestamp": "%d{yyyy-MM-dd HH:mm:ss.SSS}",
+                            "type": "metric",
+                            "message": "%msg",
+                            "server": "%X{server:-}",
+                            "metric": "%X{metric:-}",
+                            "value": "%X{value:-}",
+                            "unit": "%X{unit:-}"
+                        }
+                    </pattern>
+                </pattern>
+            </providers>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/${APP_NAME}-metrics-%d{yyyy-MM-dd}-%i.log.gz</fileNamePattern>
+            <maxFileSize>20MB</maxFileSize>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>500MB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+    <!-- 감사(Audit) 로그 -->
+    <appender name="AUDIT_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/${APP_NAME}-audit.log</file>
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <timestamp/>
+                <mdc/>
+                <message/>
+                <pattern>
+                    <pattern>
+                        {
+                            "timestamp": "%d{yyyy-MM-dd HH:mm:ss.SSS}",
+                            "type": "audit",
+                            "action": "%X{action:-}",
+                            "user": "%X{user:-}",
+                            "resource": "%X{resource:-}",
+                            "result": "%X{result:-}",
+                            "ip": "%X{clientIp:-}",
+                            "userAgent": "%X{userAgent:-}",
+                            "message": "%msg"
+                        }
+                    </pattern>
+                </pattern>
+            </providers>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/${APP_NAME}-audit-%d{yyyy-MM-dd}-%i.log.gz</fileNamePattern>
+            <maxFileSize>50MB</maxFileSize>
+            <maxHistory>365</maxHistory>
+            <totalSizeCap>5GB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+    <!-- Syslog Appender (운영 환경용) -->
+    <springProfile name="prod">
+        <appender name="SYSLOG" class="ch.qos.logback.classic.net.SyslogAppender">
+            <syslogHost>localhost</syslogHost>
+            <facility>LOCAL1</facility>
+            <suffixPattern>[%thread] %-5level %logger{36} - %msg</suffixPattern>
+            <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+                <level>WARN</level>
+            </filter>
+        </appender>
+    </springProfile>
+
+    <!-- Logstash Appender (ELK Stack 연동) -->
+    <springProfile name="prod,staging">
+        <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+            <destination>${LOGSTASH_HOST:-localhost}:${LOGSTASH_PORT:-5000}</destination>
+            <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+                <providers>
+                    <timestamp/>
+                    <version/>
+                    <logLevel/>
+                    <loggerName/>
+                    <mdc/>
+                    <message/>
+                    <stackTrace/>
+                    <pattern>
+                        <pattern>
+                            {
+                                "application": "${APP_NAME}",
+                                "environment": "${SPRING_PROFILES_ACTIVE:-default}",
+                                "host": "${HOSTNAME:-localhost}"
+                            }
+                        </pattern>
+                    </pattern>
+                </providers>
+            </encoder>
+            <ringBufferSize>8192</ringBufferSize>
+            <includeCallerData>true</includeCallerData>
+        </appender>
+    </springProfile>
+
+    <!-- Slack 알림 Appender (중요 에러용) -->
+    <springProfile name="prod">
+        <appender name="SLACK" class="com.github.maricn.logback.SlackAppender">
+            <webhookUri>${SLACK_WEBHOOK_URL}</webhookUri>
+            <channel>${SLACK_CHANNEL:-#alerts}</channel>
+            <username>LLM-API-${SPRING_PROFILES_ACTIVE}</username>
+            <iconEmoji>:warning:</iconEmoji>
+            <colorCoding>true</colorCoding>
+            <layout class="ch.qos.logback.classic.PatternLayout">
+                <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg</pattern>
+            </layout>
+            <filter class="ch.qos.logback.classic.filter.LevelFilter">
+                <level>ERROR</level>
+                <onMatch>ACCEPT</onMatch>
+                <onMismatch>DENY</onMismatch>
+            </filter>
+        </appender>
+    </springProfile>
+
+    <!-- 패키지별 로거 설정 -->
+    
+    <!-- LLM API 관련 로거 -->
+    <logger name="com.yourcompany.llm.controller" level="INFO" additivity="false">
+        <appender-ref ref="LLM_API_FILE"/>
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+    
+    <logger name="com.yourcompany.llm.service" level="INFO" additivity="false">
+        <appender-ref ref="LLM_API_FILE"/>
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+    
+    <!-- vLLM 관련 로거 -->
+    <logger name="com.yourcompany.llm.service.vllm" level="DEBUG" additivity="false">
+        <appender-ref ref="LLM_API_FILE"/>
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+    
+    <!-- 메트릭 로거 -->
+    <logger name="metrics" level="INFO" additivity="false">
+        <appender-ref ref="METRICS_FILE"/>
+    </logger>
+    
+    <!-- 감사 로거 -->
+    <logger name="audit" level="INFO" additivity="false">
+        <appender-ref ref="AUDIT_FILE"/>
+    </logger>
+    
+    <!-- Spring Framework 로거 -->
+    <logger name="org.springframework" level="WARN"/>
+    <logger name="org.springframework.web" level="INFO"/>
+    <logger name="org.springframework.security" level="INFO"/>
+    <logger name="org.springframework.cache" level="WARN"/>
+    <logger name="org.springframework.data.redis" level="WARN"/>
+    
+    <!-- Hibernate 로거 -->
+    <logger name="org.hibernate" level="WARN"/>
+    <logger name="org.hibernate.SQL" level="DEBUG"/>
+    <logger name="org.hibernate.type" level="TRACE"/>
+    
+    <!-- HTTP 클라이언트 로거 -->
+    <logger name="org.apache.http" level="WARN"/>
+    <logger name="org.springframework.web.client" level="DEBUG"/>
+    
+    <!-- Redis 로거 -->
+    <logger name="io.lettuce" level="WARN"/>
+    <logger name="org.springframework.data.redis" level="WARN"/>
+    
+    <!-- JSON 처리 로거 -->
+    <logger name="com.fasterxml.jackson" level="WARN"/>
+    
+    <!-- 보안 관련 로거 -->
+    <logger name="org.springframework.security" level="INFO"/>
+    
+    <!-- 액추에이터 로거 -->
+    <logger name="org.springframework.boot.actuate" level="WARN"/>
+    
+    <!-- 테스트 관련 로거 -->
+    <springProfile name="test">
+        <logger name="org.springframework.test" level="INFO"/>
+        <logger name="org.testcontainers" level="INFO"/>
+        <logger name="com.github.tomakehurst.wiremock" level="WARN"/>
+    </springProfile>
+
+    <!-- 환경별 루트 로거 설정 -->
+    
+    <!-- 개발 환경 -->
+    <springProfile name="dev,local">
+        <root level="DEBUG">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE"/>
+            <appender-ref ref="ERROR_FILE"/>
+        </root>
+    </springProfile>
+    
+    <!-- 테스트 환경 -->
+    <springProfile name="test">
+        <root level="WARN">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
+    
+    <!-- 스테이징 환경 -->
+    <springProfile name="staging">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="ASYNC_FILE"/>
+            <appender-ref ref="ERROR_FILE"/>
+            <appender-ref ref="LOGSTASH"/>
+        </root>
+    </springProfile>
+    
+    <!-- 프로덕션 환경 -->
+    <springProfile name="prod">
+        <root level="WARN">
+            <appender-ref ref="ASYNC_FILE"/>
+            <appender-ref ref="ERROR_FILE"/>
+            <appender-ref ref="SYSLOG"/>
+            <appender-ref ref="LOGSTASH"/>
+            <appender-ref ref="SLACK"/>
+        </root>
+    </springProfile>
+    
+    <!-- 기본 설정 (프로파일이 없는 경우) -->
+    <springProfile name="!dev & !test & !staging & !prod">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE"/>
+            <appender-ref ref="ERROR_FILE"/>
+        </root>
+    </springProfile>
+
+    <!-- JMX를 통한 로그 레벨 동적 변경 -->
+    <jmxConfigurator/>
+    
+    <!-- 로그 컨텍스트 설정 -->
+    <contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator">
+        <resetJUL>true</resetJUL>
+    </contextListener>
+    
+    <!-- 비동기 종료 훅 -->
+    <shutdownHook class="ch.qos.logback.core.hook.DelayingShutdownHook"/>
+    
+    <!-- 스타트업 성능 모니터링 -->
+    <statusListener class="ch.qos.logback.core.status.NopStatusListener"/>
+
+</configuration>
