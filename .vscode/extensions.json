@@ -1,0 +1,44 @@
+// .vscode/extensions.json
+{
+    "recommendations": [
+        // Java 개발 필수 확장
+        "redhat.java",
+        "vscjava.vscode-java-pack",
+        "vscjava.vscode-maven",
+        "vscjava.vscode-java-dependency",
+        "vscjava.vscode-java-test",
+        "vscjava.vscode-java-debug",
+        
+        // Spring Boot 개발
+        "pivotal.vscode-spring-boot",
+        "vscjava.vscode-spring-initializr",
+        "vscjava.vscode-spring-boot-dashboard",
+        
+        // YAML 지원
+        "redhat.vscode-yaml",
+        
+        // Docker 지원
+        "ms-azuretools.vscode-docker",
+        
+        // REST Client (API 테스트용)
+        "humao.rest-client",
+        
+        // Git 관련
+        "eamodio.gitlens",
+        
+        // XML 지원 (Maven pom.xml)
+        "redhat.vscode-xml",
+        
+        // 코드 포맷팅
+        "esbenp.prettier-vscode",
+        
+        // 파일 아이콘
+        "vscode-icons-team.vscode-icons",
+        
+        // Lombok 지원
+        "gabrielbb.vscode-lombok",
+        
+        // Markdown 지원
+        "yzhang.markdown-all-in-one"
+    ]
+}

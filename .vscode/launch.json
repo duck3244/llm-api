@@ -1,0 +1,73 @@
+// .vscode/launch.json
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Launch vLLM Llama 3.1 API (Dev)",
+            "request": "launch",
+            "mainClass": "com.yourcompany.llm.LlmApiApplication",
+            "projectName": "vllm-llama31-api",
+            "args": [],
+            "vmArgs": [
+                "-Dspring.profiles.active=dev",
+                "-Xmx2g",
+                "-Xms1g"
+            ],
+            "env": {
+                "SPRING_PROFILES_ACTIVE": "dev"
+            },
+            "console": "internalConsole",
+            "stopOnEntry": false,
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "java",
+            "name": "Launch vLLM Llama 3.1 API (Prod)",
+            "request": "launch",
+            "mainClass": "com.yourcompany.llm.LlmApiApplication",
+            "projectName": "vllm-llama31-api",
+            "args": [],
+            "vmArgs": [
+                "-Dspring.profiles.active=prod",
+                "-Xmx4g",
+                "-Xms2g",
+                "-XX:+UseG1GC"
+            ],
+            "env": {
+                "SPRING_PROFILES_ACTIVE": "prod"
+            },
+            "console": "internalConsole",
+            "stopOnEntry": false,
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "java",
+            "name": "Debug vLLM Llama 3.1 API",
+            "request": "launch",
+            "mainClass": "com.yourcompany.llm.LlmApiApplication",
+            "projectName": "vllm-llama31-api",
+            "args": [],
+            "vmArgs": [
+                "-Dspring.profiles.active=dev",
+                "-Xmx2g",
+                "-Xms1g",
+                "-Ddebug=true"
+            ],
+            "env": {
+                "SPRING_PROFILES_ACTIVE": "dev",
+                "DEBUG": "true"
+            },
+            "console": "internalConsole",
+            "stopOnEntry": false,
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "java",
+            "name": "Attach to JVM",
+            "request": "attach",
+            "hostName": "localhost",
+            "port": 5005
+        }
+    ]
+}

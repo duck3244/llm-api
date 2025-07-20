@@ -1,8 +1,12 @@
 // LlmApiApplication.java
 package com.yourcompany.llm;
 
-import com.yourcompany.llm.service.vllm.VllmMonitoringService;
-import lombok.extern.slf4j.Slf4j;
+import java.net.InetAddress;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
+import javax.annotation.PreDestroy;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -10,19 +14,14 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.core.env.Environment;
-import org.springframework.scheduling.annotation.EnableAsync;
-import org.springframework.scheduling.annotation.EnableScheduling;
 
-import javax.annotation.PreDestroy;
-import java.net.InetAddress;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import com.yourcompany.llm.service.vllm.VllmMonitoringService;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @SpringBootApplication
 @EnableConfigurationProperties
-@EnableAsync
-@EnableScheduling
 public class LlmApiApplication implements ApplicationRunner {
 
     @Autowired
@@ -36,7 +35,7 @@ public class LlmApiApplication implements ApplicationRunner {
 
     public static void main(String[] args) {
         long startTime = System.currentTimeMillis();
-        
+
         try {
             SpringApplication.run(LlmApiApplication.class, args);
             long duration = System.currentTimeMillis() - startTime;
@@ -50,15 +49,15 @@ public class LlmApiApplication implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) throws Exception {
         log.info("🚀 Initializing {} v{}", APPLICATION_NAME, VERSION);
-        
+
         printEnvironmentInfo();
         printServerInfo();
-        
+
         if (vllmMonitoringService != null) {
             vllmMonitoringService.initializeDefaultAlertRules();
             log.info("✅ vLLM monitoring service initialized");
         }
-        
+
         printStartupComplete();
     }
 
@@ -71,7 +70,7 @@ public class LlmApiApplication implements ApplicationRunner {
     private void printEnvironmentInfo() {
         String javaVersion = System.getProperty("java.version");
         String osName = System.getProperty("os.name");
-        
+
         log.info("🖥️ System Info:");
         log.info("   Java Version: {}", javaVersion);
         log.info("   OS: {}", osName);
@@ -82,7 +81,7 @@ public class LlmApiApplication implements ApplicationRunner {
         try {
             String port = environment.getProperty("server.port", "8080");
             String hostAddress = InetAddress.getLocalHost().getHostAddress();
-            
+
             log.info("🌐 Server Info:");
             log.info("   Port: {}", port);
             log.info("   URL: http://{}:{}", hostAddress, port);
@@ -94,7 +93,7 @@ public class LlmApiApplication implements ApplicationRunner {
     private void printStartupComplete() {
         String currentTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         String port = environment.getProperty("server.port", "8080");
-        
+
         log.info("");
         log.info("🎉 =====================================");
         log.info("🎉   {} v{}", APPLICATION_NAME, VERSION);
@@ -102,13 +101,13 @@ public class LlmApiApplication implements ApplicationRunner {
         log.info("🎉   Ready to serve Llama 3.2 requests!");
         log.info("🎉 =====================================");
         log.info("");
-        
+
         log.info("🔗 API Endpoints:");
         log.info("   Health: http://localhost:{}/api/llm/health", port);
         log.info("   Generate: POST http://localhost:{}/api/llm/generate", port);
         log.info("   vLLM Status: http://localhost:{}/api/vllm/status", port);
         log.info("");
-        
+
         log.info("💡 Quick Start:");
         log.info("   curl -X POST http://localhost:{}/api/llm/generate \\", port);
         log.info("        -H \"Content-Type: application/json\" \\");

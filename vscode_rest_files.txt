@@ -1,0 +1,232 @@
+# .vscode/api-tests.http
+# vLLM Llama 3.1 API 테스트 파일
+# VSCode REST Client 확장이 필요합니다
+
+### 변수 설정
+@baseUrl = http://localhost:8080
+@vllmBaseUrl = http://localhost:8001
+
+### 1. 기본 헬스 체크
+GET {{baseUrl}}/api/llm/health
+Accept: application/json
+
+### 2. 상세 헬스 체크 (vLLM 포함)
+GET {{baseUrl}}/api/llm/health/detailed
+Accept: application/json
+
+### 3. 간단한 텍스트 생성
+POST {{baseUrl}}/api/llm/generate
+Content-Type: application/json
+
+{
+  "message": "Explain quantum computing in simple terms",
+  "temperature": 0.7,
+  "maxTokens": 200
+}
+
+### 4. 채팅 완성 (시스템 프롬프트 포함)
+POST {{baseUrl}}/api/llm/chat/completions
+Content-Type: application/json
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a helpful AI assistant specialized in programming."
+    },
+    {
+      "role": "user",
+      "content": "Write a Python function to calculate the fibonacci sequence"
+    }
+  ],
+  "temperature": 0.3,
+  "maxTokens": 300
+}
+
+### 5. 창의적 글쓰기 (높은 temperature)
+POST {{baseUrl}}/api/llm/generate
+Content-Type: application/json
+
+{
+  "message": "Write a short story about a robot learning to paint",
+  "systemPrompt": "You are a creative writer who excels at storytelling.",
+  "temperature": 0.9,
+  "maxTokens": 500
+}
+
+### 6. 코딩 도움 (낮은 temperature)
+POST {{baseUrl}}/api/llm/generate
+Content-Type: application/json
+
+{
+  "message": "Write a Java Spring Boot controller for user management with CRUD operations",
+  "systemPrompt": "You are an expert Java developer. Write clean, well-documented code.",
+  "temperature": 0.1,
+  "maxTokens": 800
+}
+
+### 7. 모델 정보 조회
+GET {{baseUrl}}/api/llm/models
+Accept: application/json
+
+### 8. vLLM 서버 상태 확인
+GET {{baseUrl}}/api/vllm/status
+Accept: application/json
+
+### 9. vLLM 서버 목록 확인
+GET {{baseUrl}}/api/vllm/servers/running
+Accept: application/json
+
+### 10. vLLM 서버 헬스 체크
+GET {{baseUrl}}/api/vllm/servers/llama31-primary/health
+Accept: application/json
+
+### 11. vLLM 로드 밸런서 상태
+GET {{baseUrl}}/api/vllm/load-balancer/status
+Accept: application/json
+
+### 12. vLLM 모니터링 대시보드
+GET {{baseUrl}}/api/vllm/dashboard
+Accept: application/json
+
+### 13. vLLM 활성 알럿 조회
+GET {{baseUrl}}/api/vllm/monitoring/alerts
+Accept: application/json
+
+### 14. vLLM 모니터링 요약
+GET {{baseUrl}}/api/vllm/monitoring/summary
+Accept: application/json
+
+### 15. vLLM 서버 시작
+POST {{baseUrl}}/api/vllm/servers/llama31-primary/start
+Content-Type: application/json
+
+### 16. vLLM 서버 중지
+POST {{baseUrl}}/api/vllm/servers/llama31-primary/stop
+Content-Type: application/json
+
+### 17. 스마트 채팅 완성 (자동 로드 밸런싱)
+POST {{baseUrl}}/api/vllm/chat/completions
+Content-Type: application/json
+
+{
+  "messages": [
+    {
+      "role": "user",
+      "content": "What are the key features of Llama 3.1?"
+    }
+  ],
+  "temperature": 0.5,
+  "maxTokens": 400
+}
+
+### 18. 로드 밸런서 서버 선택 테스트
+POST {{baseUrl}}/api/vllm/load-balancer/select?strategy=HEALTH_BASED
+Content-Type: application/json
+
+### 19. 에러 케이스 테스트 - 너무 긴 입력
+POST {{baseUrl}}/api/llm/generate
+Content-Type: application/json
+
+{
+  "message": "This is a very long message that exceeds the token limit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat...",
+  "maxTokens": 10000
+}
+
+### 20. 에러 케이스 테스트 - 잘못된 temperature
+POST {{baseUrl}}/api/llm/generate
+Content-Type: application/json
+
+{
+  "message": "Test message",
+  "temperature": 3.0,
+  "maxTokens": 100
+}
+
+### 21. Spring Boot Actuator 엔드포인트들
+GET {{baseUrl}}/actuator/health
+Accept: application/json
+
+###
+GET {{baseUrl}}/actuator/info
+Accept: application/json
+
+###
+GET {{baseUrl}}/actuator/metrics
+Accept: application/json
+
+### 22. 직접 vLLM 서버 테스트
+GET {{vllmBaseUrl}}/v1/models
+Accept: application/json
+
+### 23. 직접 vLLM 채팅 완성
+POST {{vllmBaseUrl}}/v1/chat/completions
+Content-Type: application/json
+
+{
+  "model": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Hello, how are you?"
+    }
+  ],
+  "max_tokens": 100,
+  "temperature": 0.7
+}
+
+---
+
+# .vscode/workspace.code-workspace
+{
+    "folders": [
+        {
+            "name": "vLLM Llama 3.1 API",
+            "path": "."
+        }
+    ],
+    "settings": {
+        "java.configuration.updateBuildConfiguration": "interactive",
+        "java.format.settings.url": ".vscode/eclipse-java-google-style.xml",
+        "files.associations": {
+            "*.yml": "yaml",
+            "*.yaml": "yaml"
+        }
+    },
+    "extensions": {
+        "recommendations": [
+            "redhat.java",
+            "vscjava.vscode-java-pack",
+            "pivotal.vscode-spring-boot",
+            "redhat.vscode-yaml",
+            "ms-azuretools.vscode-docker",
+            "humao.rest-client"
+        ]
+    },
+    "launch": {
+        "version": "0.2.0",
+        "configurations": [
+            {
+                "type": "java",
+                "name": "Launch vLLM Llama 3.1 API",
+                "request": "launch",
+                "mainClass": "com.yourcompany.llm.LlmApiApplication",
+                "projectName": "vllm-llama31-api",
+                "vmArgs": ["-Dspring.profiles.active=dev"]
+            }
+        ]
+    },
+    "tasks": {
+        "version": "2.0.0",
+        "tasks": [
+            {
+                "label": "Maven: Spring Boot Run",
+                "type": "shell",
+                "command": "mvn",
+                "args": ["spring-boot:run"],
+                "group": "build",
+                "isBackground": true
+            }
+        ]
+    }
+}

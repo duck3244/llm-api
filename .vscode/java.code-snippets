@@ -1,0 +1,63 @@
+// .vscode/java.code-snippets
+{
+    "Spring Boot Controller": {
+        "prefix": "sbcontroller",
+        "body": [
+            "@RestController",
+            "@RequestMapping(\"/${1:api}\")",
+            "@RequiredArgsConstructor",
+            "@CrossOrigin(origins = \"*\")",
+            "public class ${2:ControllerName} {",
+            "",
+            "    private final ${3:ServiceName} ${4:serviceName};",
+            "",
+            "    @GetMapping(\"/${5:endpoint}\")",
+            "    public ResponseEntity<${6:ResponseType}> ${7:methodName}() {",
+            "        ${8://TODO: Implementation}",
+            "        return ResponseEntity.ok().build();",
+            "    }",
+            "}"
+        ],
+        "description": "Spring Boot REST Controller 템플릿"
+    },
+    
+    "vLLM Service Method": {
+        "prefix": "vllmmethod",
+        "body": [
+            "public CompletableFuture<${1:ReturnType}> ${2:methodName}(${3:parameters}) {",
+            "    return CompletableFuture.supplyAsync(() -> {",
+            "        try {",
+            "            ${4://TODO: vLLM implementation}",
+            "            log.debug(\"${5:Operation} completed successfully\");",
+            "            return ${6:result};",
+            "        } catch (Exception e) {",
+            "            log.error(\"Error in ${2:methodName}\", e);",
+            "            throw new RuntimeException(\"${5:Operation} failed: \" + e.getMessage());",
+            "        }",
+            "    });",
+            "}"
+        ],
+        "description": "vLLM 비동기 서비스 메서드 템플릿"
+    },
+    
+    "Llama Request Template": {
+        "prefix": "llamareq",
+        "body": [
+            "LlmRequest request = LlmRequest.builder()",
+            "    .model(\"llama3.1\")",
+            "    .message(\"${1:Your message here}\")",
+            "    .temperature(${2:0.7})",
+            "    .maxTokens(${3:1000})",
+            "    .build();"
+        ],
+        "description": "Llama 3.1 요청 객체 생성 템플릿"
+    },
+    
+    "Logger Declaration": {
+        "prefix": "logger",
+        "body": [
+            "private static final Logger log = LoggerFactory.getLogger(${1:ClassName}.class);"
+        ],
+        "description": "Logger 선언"
+    }
+}
