@@ -1,0 +1,19 @@
+# application-prod.yml (운영 환경)
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+server:
+  port: 8080
+
+logging:
+  level:
+    com.yourcompany.llm: INFO
+    root: WARN
+  file:
+    name: logs/vllm-llama32-api.log
+
+vllm:
+  global-settings:
+    log-level: INFO

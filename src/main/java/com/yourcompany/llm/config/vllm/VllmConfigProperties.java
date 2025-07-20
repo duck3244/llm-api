@@ -5,99 +5,73 @@ import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
+import javax.validation.Valid;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.util.List;
-import java.util.Map;
 
 @Data
 @Component
 @ConfigurationProperties(prefix = "vllm")
 public class VllmConfigProperties {
     
+    @Valid
     private List<VllmServerConfig> servers;
-    private VllmGlobalSettings globalSettings;
-    private VllmResourceSettings resourceSettings;
-    private VllmSecuritySettings securitySettings;
+    
+    @Valid
+    private VllmGlobalSettings globalSettings = new VllmGlobalSettings();
     
     @Data
     public static class VllmServerConfig {
+        @NotBlank
         private String name;
-        private String model;
-        private String modelPath;
+        
+        @NotBlank
+        private String model; // llama3.2 모델 경로
+        
+        @NotBlank
+        private String host = "localhost";
+        
+        @NotNull
+        @Min(1024)
         private Integer port;
-        private String host;
-        private Boolean enabled;
-        private VllmModelSettings modelSettings;
-        private VllmPerformanceSettings performanceSettings;
-        private VllmQuantizationSettings quantizationSettings;
+        
+        @NotNull
+        private Boolean enabled = true;
+        
+        @Valid
+        private VllmModelSettings modelSettings = new VllmModelSettings();
+        
+        @Valid
+        private VllmPerformanceSettings performanceSettings = new VllmPerformanceSettings();
     }
     
     @Data
     public static class VllmModelSettings {
-        private Integer maxModelLen;
-        private Integer maxNumSeqs;
-        private String dtype;
-        private Boolean trustRemoteCode;
-        private Integer maxLogProbs;
-        private String revision;
-        private String tokenizer;
-        private String tokenizerRevision;
-        private Boolean skipTokenizerInit;
+        private Integer maxModelLen = 8192;
+        private Integer maxNumSeqs = 256;
+        private String dtype = "auto";
+        private Boolean trustRemoteCode = false;
     }
     
     @Data
     public static class VllmPerformanceSettings {
-        private Double gpuMemoryUtilization;
-        private Integer tensorParallelSize;
-        private Integer pipelineParallelSize;
-        private Integer maxPaddings;
-        private Integer blockSize;
-        private String swapSpace;
-        private Boolean disableLogStats;
-    }
-    
-    @Data
-    public static class VllmQuantizationSettings {
-        private String quantization; // "awq", "gptq", "squeezellm", "fp8"
-        private String loadFormat; // "auto", "pt", "safetensors", "npcache", "dummy"
-        private Boolean enforceEager;
-        private Integer maxContextLenToCapture;
+        private Double gpuMemoryUtilization = 0.9;
+        private Integer tensorParallelSize = 1;
+        private Boolean disableLogStats = false;
     }
     
     @Data
     public static class VllmGlobalSettings {
-        private Integer seed;
-        private String workerUseRay;
-        private Integer engineUseRay;
-        private Boolean disableLogRequests;
-        private String logLevel; // "DEBUG", "INFO", "WARNING", "ERROR"
-        private Integer requestTimeout;
-        private Boolean enableMetrics;
-    }
-    
-    @Data
-    public static class VllmResourceSettings {
-        private String device; // "auto", "cuda", "cpu"
-        private List<Integer> gpuIds;
-        private Integer numGpus;
-        private String cpuOffloadGb;
-        private String diskOffloadGb;
-        private Integer maxCpuThreads;
-    }
-    
-    @Data
-    public static class VllmSecuritySettings {
-        private Boolean sslEnabled;
-        private String sslKeyfile;
-        private String sslCertfile;
-        private String apiKey;
-        private Boolean corsEnabled;
-        private List<String> allowedOrigins;
-        private List<String> allowedMethods;
-        private List<String> allowedHeaders;
+        private Integer seed = 42;
+        private String logLevel = "INFO";
+        private Boolean enableMetrics = true;
     }
     
     // Helper methods
     public VllmServerConfig getServerByName(String serverName) {
+        if (servers == null) return null;
         return servers.stream()
             .filter(server -> server.getName().equals(serverName))
             .findFirst()
@@ -105,21 +79,9 @@ public class VllmConfigProperties {
     }
     
     public List<VllmServerConfig> getEnabledServers() {
+        if (servers == null) return List.of();
         return servers.stream()
             .filter(server -> server.getEnabled() != null && server.getEnabled())
-            .toList();
-    }
-    
-    public VllmServerConfig getServerByPort(Integer port) {
-        return servers.stream()
-            .filter(server -> server.getPort().equals(port))
-            .findFirst()
-            .orElse(null);
-    }
-    
-    public List<VllmServerConfig> getServersByModel(String model) {
-        return servers.stream()
-            .filter(server -> server.getModel().contains(model))
             .toList();
     }
 }

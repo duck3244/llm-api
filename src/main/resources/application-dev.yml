@@ -1,0 +1,14 @@
+# application-dev.yml (개발 환경)
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+logging:
+  level:
+    com.yourcompany.llm: DEBUG
+    root: INFO
+
+vllm:
+  global-settings:
+    log-level: DEBUG
