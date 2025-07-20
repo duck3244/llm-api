@@ -1,0 +1,306 @@
+# application-vllm.yml - vLLM 전용 설정
+
+vllm:
+  # vLLM 서버 설정
+  servers:
+    # Llama3 8B 서버
+    - name: "llama3-server"
+      model: "meta-llama/Meta-Llama-3-8B-Instruct"
+      modelPath: null # 로컬 경로가 있는 경우 설정
+      port: 8000
+      host: "0.0.0.0"
+      enabled: true
+      modelSettings:
+        maxModelLen: 4096
+        maxNumSeqs: 256
+        dtype: "auto"
+        trustRemoteCode: false
+        maxLogProbs: 5
+        revision: null
+        tokenizer: null
+        tokenizerRevision: null
+        skipTokenizerInit: false
+      performanceSettings:
+        gpuMemoryUtilization: 0.9
+        tensorParallelSize: 1
+        pipelineParallelSize: 1
+        maxPaddings: 256
+        blockSize: 16
+        swapSpace: "4GB"
+        disableLogStats: false
+      quantizationSettings:
+        quantization: null # "awq", "gptq", "squeezellm", "fp8"
+        loadFormat: "auto"
+        enforceEager: false
+        maxContextLenToCapture: 8192
+    
+    # Mistral 7B 서버
+    - name: "mistral-server"
+      model: "mistralai/Mistral-7B-Instruct-v0.2"
+      port: 8001
+      host: "0.0.0.0"
+      enabled: false # 기본적으로 비활성화
+      modelSettings:
+        maxModelLen: 4096
+        maxNumSeqs: 128
+        dtype: "auto"
+        trustRemoteCode: false
+      performanceSettings:
+        gpuMemoryUtilization: 0.85
+        tensorParallelSize: 1
+        pipelineParallelSize: 1
+        disableLogStats: false
+      quantizationSettings:
+        quantization: null
+        loadFormat: "auto"
+        enforceEager: false
+    
+    # CodeLlama 7B 서버 (코딩 전용)
+    - name: "codellama-server"
+      model: "codellama/CodeLlama-7b-Instruct-hf"
+      port: 8003
+      host: "0.0.0.0"
+      enabled: false
+      modelSettings:
+        maxModelLen: 4096
+        maxNumSeqs: 64
+        dtype: "auto"
+        trustRemoteCode: false
+      performanceSettings:
+        gpuMemoryUtilization: 0.8
+        tensorParallelSize: 1
+        pipelineParallelSize: 1
+      quantizationSettings:
+        quantization: null
+        loadFormat: "auto"
+    
+    # Gemma 7B 서버
+    - name: "gemma-server"
+      model: "google/gemma-7b-it"
+      port: 8002
+      host: "0.0.0.0"
+      enabled: false
+      modelSettings:
+        maxModelLen: 2048
+        maxNumSeqs: 128
+        dtype: "auto"
+        trustRemoteCode: false
+      performanceSettings:
+        gpuMemoryUtilization: 0.8
+        tensorParallelSize: 1
+        pipelineParallelSize: 1
+      quantizationSettings:
+        quantization: null
+        loadFormat: "auto"
+    
+    # 양자화된 모델 서버 (메모리 절약용)
+    - name: "llama3-quantized-server"
+      model: "meta-llama/Meta-Llama-3-8B-Instruct"
+      port: 8004
+      host: "0.0.0.0"
+      enabled: false
+      modelSettings:
+        maxModelLen: 4096
+        maxNumSeqs: 512  # 양자화로 더 많은 시퀀스 처리 가능
+        dtype: "auto"
+      performanceSettings:
+        gpuMemoryUtilization: 0.7
+        tensorParallelSize: 1
+        pipelineParallelSize: 1
+      quantizationSettings:
+        quantization: "awq"  # AWQ 양자화
+        loadFormat: "auto"
+        enforceEager: false
+  
+  # 글로벌 설정
+  globalSettings:
+    seed: 42
+    workerUseRay: false
+    engineUseRay: false
+    disableLogRequests: false
+    logLevel: "INFO"  # DEBUG, INFO, WARNING, ERROR
+    requestTimeout: 300000  # 5분 (밀리초)
+    enableMetrics: true
+  
+  # 리소스 설정
+  resourceSettings:
+    device: "auto"  # auto, cuda, cpu
+    gpuIds: [0]  # 사용할 GPU ID 목록
+    numGpus: 1
+    cpuOffloadGb: null
+    diskOffloadGb: null
+    maxCpuThreads: null
+  
+  # 보안 설정
+  securitySettings:
+    sslEnabled: false
+    sslKeyfile: null
+    sslCertfile: null
+    apiKey: null  # API 키 인증 (선택사항)
+    corsEnabled: true
+    allowedOrigins:
+      - "http://localhost:3000"
+      - "http://localhost:8080"
+      - "https://yourdomain.com"
+    allowedMethods:
+      - "GET"
+      - "POST"
+      - "OPTIONS"
+    allowedHeaders:
+      - "Content-Type"
+      - "Authorization"
+      - "X-Requested-With"
+
+# 프로파일별 설정
+---
+# 개발 환경
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+vllm:
+  servers:
+    - name: "llama3-dev-server"
+      model: "meta-llama/Meta-Llama-3-8B-Instruct"
+      port: 8000
+      host: "localhost"
+      enabled: true
+      modelSettings:
+        maxModelLen: 2048  # 개발용으로 축소
+        maxNumSeqs: 32
+      performanceSettings:
+        gpuMemoryUtilization: 0.7  # 개발용으로 낮춤
+  
+  globalSettings:
+    logLevel: "DEBUG"
+    disableLogRequests: false
+  
+  securitySettings:
+    corsEnabled: true
+    allowedOrigins: ["*"]
+
+---
+# 프로덕션 환경
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+vllm:
+  servers:
+    - name: "llama3-prod-server"
+      model: "meta-llama/Meta-Llama-3-8B-Instruct"
+      port: 8000
+      host: "0.0.0.0"
+      enabled: true
+      modelSettings:
+        maxModelLen: 4096
+        maxNumSeqs: 512
+      performanceSettings:
+        gpuMemoryUtilization: 0.95  # 프로덕션에서 최대 활용
+        tensorParallelSize: 2  # 멀티 GPU 사용
+      quantizationSettings:
+        quantization: "awq"  # 프로덕션에서 양자화 사용
+    
+    - name: "mistral-prod-server"
+      model: "mistralai/Mistral-7B-Instruct-v0.2"
+      port: 8001
+      host: "0.0.0.0"
+      enabled: true
+      performanceSettings:
+        gpuMemoryUtilization: 0.9
+        tensorParallelSize: 1
+  
+  globalSettings:
+    logLevel: "WARNING"
+    disableLogRequests: true  # 프로덕션에서 로그 최소화
+    requestTimeout: 600000  # 10분
+  
+  resourceSettings:
+    gpuIds: [0, 1]  # 멀티 GPU
+    numGpus: 2
+  
+  securitySettings:
+    apiKey: "${VLLM_API_KEY:}"
+    corsEnabled: false
+    allowedOrigins:
+      - "https://api.yourdomain.com"
+      - "https://app.yourdomain.com"
+
+---
+# 테스트 환경
+spring:
+  config:
+    activate:
+      on-profile: test
+
+vllm:
+  servers:
+    - name: "test-server"
+      model: "meta-llama/Meta-Llama-3-8B-Instruct"
+      port: 8000
+      host: "localhost"
+      enabled: true
+      modelSettings:
+        maxModelLen: 1024
+        maxNumSeqs: 16
+      performanceSettings:
+        gpuMemoryUtilization: 0.5
+  
+  globalSettings:
+    logLevel: "ERROR"
+    disableLogRequests: true
+
+---
+# Docker 환경
+spring:
+  config:
+    activate:
+      on-profile: docker
+
+vllm:
+  servers:
+    - name: "llama3-docker-server"
+      model: "meta-llama/Meta-Llama-3-8B-Instruct"
+      port: 8000
+      host: "0.0.0.0"
+      enabled: true
+      performanceSettings:
+        gpuMemoryUtilization: 0.9
+  
+  resourceSettings:
+    device: "cuda"
+  
+  securitySettings:
+    corsEnabled: true
+    allowedOrigins: ["*"]
+
+# 로깅 설정
+logging:
+  level:
+    com.yourcompany.llm.service.vllm: DEBUG
+    org.springframework.web.client: WARN
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+# 액추에이터 설정 (모니터링용)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+# 스케줄링 설정
+spring:
+  task:
+    scheduling:
+      pool:
+        size: 5  # vLLM 모니터링용 스레드풀
