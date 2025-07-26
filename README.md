@@ -58,7 +58,7 @@ huggingface-cli login
 
 ```bash
 # 8B 모델 (권장)
-huggingface-cli download meta-llama/Meta-Llama-3.2-1B-Instruct
+huggingface-cli download torchtorchkimtorch/Llama-3.2-Korean-GGACHI-1B-Instruct-v1
 
 ### 4️⃣ 설정 파일 수정
 
@@ -66,8 +66,8 @@ huggingface-cli download meta-llama/Meta-Llama-3.2-1B-Instruct
 # src/main/resources/application.yml
 vllm:
   servers:
-    - name: "llama31-primary"
-      model: "meta-llama/Meta-Llama-3.2-1B-Instruct"  # 실제 모델 경로로 수정
+    - name: "llama32-primary"
+      model: "torchtorchkimtorch/Llama-3.2-Korean-GGACHI-1B-Instruct-v1"  # 실제 모델 경로로 수정
       host: "localhost"
       port: 8001
       enabled: true
@@ -97,7 +97,7 @@ docker-compose logs -f
 
 ```bash
 # 헬스 체크
-curl http://localhost:8080/api/llm/health
+curl http://localhost:8080/health
 
 # 텍스트 생성 테스트
 curl -X POST http://localhost:8080/api/llm/generate \
@@ -126,7 +126,7 @@ curl -X POST http://localhost:8080/api/llm/generate \
 ### 💬 채팅 완성 (OpenAI 호환)
 
 ```bash
-curl -X POST http://localhost:8080/api/llm/chat/completions \
+curl -X POST http://localhost:8080/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
     "messages": [
@@ -141,7 +141,7 @@ curl -X POST http://localhost:8080/api/llm/chat/completions \
 ### 🎯 시스템 프롬프트 활용
 
 ```bash
-curl -X POST http://localhost:8080/api/llm/generate \
+curl -X POST http://localhost:8080/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
     "message": "Explain machine learning",
@@ -151,42 +151,6 @@ curl -X POST http://localhost:8080/api/llm/generate \
   }'
 ```
 
-## 🛠️ 관리 API
-
-### 📊 시스템 상태 확인
-
-```bash
-# 전체 상태
-curl http://localhost:8080/api/vllm/status
-
-# 상세 헬스 체크
-curl http://localhost:8080/api/llm/health/detailed
-
-# 모니터링 대시보드
-curl http://localhost:8080/api/vllm/dashboard
-```
-
-### 🔄 서버 관리
-
-```bash
-# vLLM 서버 시작
-curl -X POST http://localhost:8080/api/vllm/servers/llama32-primary/start
-
-# vLLM 서버 중지
-curl -X POST http://localhost:8080/api/vllm/servers/llama32-primary/stop
-
-# 실행 중인 서버 목록
-curl http://localhost:8080/api/vllm/servers/running
-```
-
-### ⚖️ 로드 밸런서
-
-```bash
-# 로드 밸런서 상태
-curl http://localhost:8080/api/vllm/load-balancer/status
-
-# 최적 서버 선택
-curl -X POST http://localhost:8080/api/vllm/load-balancer/select?strategy=HEALTH_BASED
 ```
 
 ## ⚙️ 설정 가이드
@@ -197,7 +161,7 @@ curl -X POST http://localhost:8080/api/vllm/load-balancer/select?strategy=HEALTH
 vllm:
   servers:
     - name: "llama32-1b"
-      model: "meta-llama/Meta-Llama-3.2-1B-Instruct"
+      model: "torchtorchkimtorch/Llama-3.2-Korean-GGACHI-1B-Instruct-v1"
       host: "localhost"
       port: 8001
       enabled: true
@@ -378,7 +342,7 @@ huggingface-cli whoami
 ls -la ~/.cache/huggingface/hub/
 
 # 수동 다운로드
-huggingface-cli download meta-llama/Meta-Llama-3.2-1B-Instruct
+huggingface-cli download torchtorchkimtorch/Llama-3.2-Korean-GGACHI-1B-Instruct-v1
 ```
 
 #### 3. 메모리 부족 (CUDA OOM)
